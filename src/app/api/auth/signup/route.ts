@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     await dbConnect();
 
     // 3. Check if email exists
-    const existing = await User.findOne({ email });
+    const existing = await User.findOne({ email }).exec(); // ✅ fixed
     if (existing) {
       return NextResponse.json(
         { message: "Email already in use" },
@@ -39,13 +39,17 @@ export async function POST(req: Request) {
     const passwordHash = await bcrypt.hash(password, 12);
 
     // 5. Create user
-    const user = await User.create({ name, email, passwordHash });
+    const user = await User.create({ name, email, passwordHash }); // ✅ fixed
 
     // 6. Success response
     return NextResponse.json(
       {
         message: "Signup successful",
-        user: { id: user._id.toString(), name: user.name, email: user.email }
+        user: {
+          id: user._id.toString(),
+          name: user.name,
+          email: user.email,
+        },
       },
       { status: 201 }
     );
