@@ -1,6 +1,16 @@
-import { Schema, model, models } from "mongoose";
+import { Schema, model, models, Document, Model } from "mongoose";
 
-const UserSchema = new Schema(
+// 1. Define an interface for TypeScript
+export interface IUser extends Document {
+  name: string;
+  email: string;
+  passwordHash: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// 2. Create Schema with generic <IUser>
+const UserSchema = new Schema<IUser>(
   {
     name: { type: String, required: true, trim: true },
     email: {
@@ -9,12 +19,15 @@ const UserSchema = new Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      index: true
+      index: true,
     },
-    passwordHash: { type: String, required: true }
+    passwordHash: { type: String, required: true },
   },
   { timestamps: true }
 );
 
-// Avoid recompiling model in dev/hot-reload
-export default models.User || model("User", UserSchema);
+// 3. Typed model to avoid TS errors
+const User: Model<IUser> =
+  (models.User as Model<IUser>) || model<IUser>("User", UserSchema);
+
+export default User;
